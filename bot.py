@@ -22,7 +22,7 @@ MERCHANT = "NBAVIPP"
 PAY_URL = "https://cloud.la2568.site/api/transfer"
 QUERY_URL = "https://cloud.la2568.site/api/query"
 
-CHANNEL_ID = -100XXXXXXXXXX
+CHANNEL_ID = -1001234567890
 
 PRICE = "10000.00"
 PRICE_DISPLAY = "10,000 PHP"
