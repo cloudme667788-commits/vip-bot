@@ -13,8 +13,8 @@ from telegram.ext import (
 
 # ================== BASIC CONFIG ==================
 
-TOKEN ="8796723299:AAFzg7KVpZG4bqR4OhwHXVqG8if0zh8-PEk"
-SECRET_KEY ="e426c9356d590131935bd8952d44f17c"
+TOKEN =os.getenv("BOT_TOKEN")
+SECRET_KEY =os.getenv("SECRET_KEY")
 
 MERCHANT = "NBAVIP"   # ← 改成你的 merchant
 PAY_URL = "https://cloud.la2568.site/api/transfer"
