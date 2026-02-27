@@ -18,7 +18,7 @@ from telegram.ext import (
 TOKEN = os.getenv("BOT_TOKEN")
 SECRET_KEY = os.getenv("SECRET_KEY")
 
-MERCHANT = "NBAVIPP"
+MERCHANT = "NBAVIP"
 PAY_URL = "https://cloud.la2568.site/api/transfer"
 QUERY_URL = "https://cloud.la2568.site/api/query"
 
