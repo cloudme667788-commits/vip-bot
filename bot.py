@@ -1,10 +1,8 @@
 import os
+import time
 import hashlib
 import requests
-import time
 import sqlite3
-import threading
-from flask import Flask
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     ApplicationBuilder,
@@ -18,11 +16,9 @@ from telegram.ext import (
 TOKEN = os.getenv("BOT_TOKEN")
 SECRET_KEY = os.getenv("SECRET_KEY")
 
-MERCHANT = "NBAVIP"
+MERCHANT = "NBAVIPP"
 PAY_URL = "https://cloud.la2568.site/api/transfer"
 QUERY_URL = "https://cloud.la2568.site/api/query"
-
-CHANNEL_ID = -1001234567890
 
 PRICE = "10000.00"
 PRICE_DISPLAY = "10,000 PHP"
@@ -49,18 +45,6 @@ CREATE TABLE IF NOT EXISTS members (
 """)
 
 conn.commit()
-
-# ================== FLASK (給 Render 用) ==================
-
-flask_app = Flask(__name__)
-
-@flask_app.route("/")
-def home():
-    return "Bot is running"
-
-def run_web():
-    port = int(os.environ.get("PORT", 10000))
-    flask_app.run(host="0.0.0.0", port=port)
 
 # ================== SIGN FUNCTION ==================
 
@@ -109,35 +93,17 @@ def query_order(order_id):
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-    user_id = update.effective_user.id
-
-    cursor.execute("SELECT * FROM members WHERE user_id=?", (user_id,))
-    member = cursor.fetchone()
-
-    if member:
-        await update.message.reply_text(
-            "✅ You are already an active VIP member."
-        )
-        return
-
     keyboard = [
         [
             InlineKeyboardButton("💳 GCash", callback_data="pay_gcash"),
             InlineKeyboardButton("💳 Maya", callback_data="pay_maya"),
         ],
-        [
-            InlineKeyboardButton(
-                "✉️ Online Customer Service",
-                url="https://t.me/money_k_k",
-            )
-        ],
     ]
 
     await update.message.reply_text(
-        "💎 VIP Membership Plan\n\n"
+        "💎 VIP Special Insider Information\n\n"
         f"💰 Price: {PRICE_DISPLAY}\n"
-        "📅 Validity: Permanent Access\n"
-        "🚀 Unlock exclusive premium content now\n\n"
+         "🚀 Unlock exclusive premium content now\n\n"
         "Please select your payment method:",
         reply_markup=InlineKeyboardMarkup(keyboard),
     )
@@ -149,16 +115,6 @@ async def buy(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
 
     user_id = query.from_user.id
-
-    cursor.execute("SELECT * FROM members WHERE user_id=?", (user_id,))
-    member = cursor.fetchone()
-
-    if member:
-        await query.message.reply_text(
-            "✅ You are already an active VIP member."
-        )
-        return
-
     order_id = f"ORD{int(time.time())}"
 
     cursor.execute(
@@ -170,11 +126,9 @@ async def buy(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if query.data == "pay_gcash":
         payment_type = "7"
         bank_code = "mya"
-
     elif query.data == "pay_maya":
         payment_type = "3"
         bank_code = "PMP"
-
     else:
         await query.message.reply_text("Invalid payment method.")
         return
@@ -220,7 +174,6 @@ async def check_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
     order_id = row[0]
 
     check = query_order(order_id)
-    print("Query result:", check)
 
     if str(check.get("status")) == "5":
 
@@ -228,22 +181,17 @@ async def check_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "UPDATE orders SET status='paid' WHERE order_id=?",
             (order_id,),
         )
-
-        cursor.execute(
-            "INSERT OR REPLACE INTO members (user_id, order_id, joined_at) VALUES (?, ?, ?)",
-            (user_id, order_id, str(int(time.time()))),
-        )
-
         conn.commit()
 
-        invite = await context.bot.create_chat_invite_link(
-            chat_id=CHANNEL_ID,
-            member_limit=1,
-        )
+        keyboard = [
+            [InlineKeyboardButton("Online Support 1", url="https://t.me/cokiedsa")],
+            [InlineKeyboardButton("Online Support 2", url="https://t.me/cioul44558")],
+        ]
 
         await query.message.reply_text(
-            f"✅ Payment successful!\n\n"
-            f"Click below to join VIP channel:\n{invite.invite_link}"
+            "✅ You have completed your VIP membership purchase.\n\n"
+            "Please contact our online support team to receive VIP information.",
+            reply_markup=InlineKeyboardMarkup(keyboard),
         )
 
     else:
@@ -253,7 +201,7 @@ async def check_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ================== RUN ==================
 
-def run_bot():
+def main():
     application = ApplicationBuilder().token(TOKEN).build()
 
     application.add_handler(CommandHandler("start", start))
@@ -263,5 +211,4 @@ def run_bot():
     application.run_polling()
 
 if __name__ == "__main__":
-    threading.Thread(target=run_web).start()
-    run_bot()
+    main()
